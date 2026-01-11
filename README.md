@@ -40,7 +40,7 @@ to clipboard in a format ready to paste back to the agent.
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew install agavra/tuicr/tuicr
+brew install agavra/tap/tuicr
 ```
 
 ### Pre-built binaries
