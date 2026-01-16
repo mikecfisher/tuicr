@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use crate::error::{Result, TuicrError};
 use crate::model::{Comment, CommentType, DiffFile, DiffLine, LineSide, ReviewSession};
 use crate::persistence::{find_session_for_repo, load_session};
+use crate::theme::Theme;
 use crate::vcs::git::calculate_gap;
 use crate::vcs::{CommitInfo, VcsBackend, VcsInfo, detect_vcs};
 
@@ -110,6 +111,7 @@ pub struct Message {
 }
 
 pub struct App {
+    pub theme: Theme,
     pub vcs: Box<dyn VcsBackend>,
     pub vcs_info: VcsInfo,
     pub session: ReviewSession,
@@ -231,12 +233,13 @@ enum CommentLocation {
 }
 
 impl App {
-    pub fn new() -> Result<Self> {
+    pub fn new(theme: Theme) -> Result<Self> {
         let vcs = detect_vcs()?;
         let vcs_info = vcs.info().clone();
+        let highlighter = theme.syntax_highlighter();
 
         // Try to get working tree diff first
-        let diff_result = vcs.get_working_tree_diff();
+        let diff_result = vcs.get_working_tree_diff(highlighter);
 
         match diff_result {
             Ok(diff_files) => {
@@ -250,6 +253,7 @@ impl App {
                 }
 
                 let mut app = Self {
+                    theme,
                     vcs,
                     vcs_info,
                     session,
@@ -300,6 +304,7 @@ impl App {
                     ReviewSession::new(vcs_info.root_path.clone(), vcs_info.head_commit.clone());
 
                 Ok(Self {
+                    theme,
                     vcs,
                     vcs_info,
                     session,
@@ -374,7 +379,8 @@ impl App {
             prev_cursor_line.saturating_sub(start)
         };
 
-        let diff_files = self.vcs.get_working_tree_diff()?;
+        let highlighter = self.theme.syntax_highlighter();
+        let diff_files = self.vcs.get_working_tree_diff(highlighter)?;
 
         for file in &diff_files {
             let path = file.display_path().clone();
@@ -1482,7 +1488,8 @@ impl App {
         }
 
         // Get the diff for the selected commits
-        let diff_files = self.vcs.get_commit_range_diff(&selected_ids)?;
+        let highlighter = self.theme.syntax_highlighter();
+        let diff_files = self.vcs.get_commit_range_diff(&selected_ids, highlighter)?;
 
         if diff_files.is_empty() {
             self.set_message("No changes in selected commits");
