@@ -14,6 +14,10 @@ use crate::ui::{comment_panel, help_popup, status_bar, styles};
 use crate::vcs::git::calculate_gap;
 
 pub fn render(frame: &mut Frame, app: &mut App) {
+    // Fill entire frame with theme background
+    let bg = Paragraph::new("").style(Style::default().bg(app.theme.main_bg));
+    frame.render_widget(bg, frame.area());
+
     // Special handling for commit selection mode
     if app.input_mode == InputMode::CommitSelect {
         render_commit_select(frame, app);

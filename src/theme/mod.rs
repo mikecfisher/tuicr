@@ -4,6 +4,7 @@
 
 use std::sync::OnceLock;
 
+use catppuccin::PALETTE;
 use ratatui::style::Color;
 
 use crate::syntax::SyntaxHighlighter;
@@ -14,6 +15,7 @@ pub struct Theme {
     highlighter: OnceLock<SyntaxHighlighter>,
 
     // Base colors
+    pub main_bg: Color,
     pub bg_highlight: Color,
     pub fg_primary: Color,
     pub fg_secondary: Color,
@@ -75,6 +77,7 @@ impl Theme {
             highlighter: OnceLock::new(),
 
             // Base colors
+            main_bg: Color::Rgb(30, 30, 30),
             bg_highlight: Color::Rgb(70, 70, 70),
             fg_primary: Color::White,
             fg_secondary: Color::Rgb(210, 210, 210),
@@ -130,6 +133,7 @@ impl Theme {
             highlighter: OnceLock::new(),
 
             // Base colors - dark text on light background
+            main_bg: Color::Rgb(239, 241, 245),
             bg_highlight: Color::Rgb(200, 200, 220),
             fg_primary: Color::Rgb(0, 0, 0),
             fg_secondary: Color::Rgb(30, 30, 30),
@@ -179,6 +183,93 @@ impl Theme {
             mode_bg: Color::Rgb(0, 80, 160),
         }
     }
+
+    /// Create a theme from a Catppuccin flavor
+    fn from_catppuccin(flavor: &catppuccin::Flavor, is_light: bool) -> Self {
+        let c = &flavor.colors;
+
+        // Helper to convert catppuccin color to ratatui Color
+        let rgb = |color: catppuccin::Color| {
+            let catppuccin::Rgb { r, g, b } = color.rgb;
+            Color::Rgb(r, g, b)
+        };
+
+        let (add_bg, del_bg, syntax_add_bg, syntax_del_bg) = if is_light {
+            (
+                Color::Rgb(220, 255, 220),
+                Color::Rgb(255, 230, 230),
+                Color::Rgb(230, 255, 235),
+                Color::Rgb(255, 240, 240),
+            )
+        } else {
+            (
+                Color::Rgb(30, 50, 35),
+                Color::Rgb(55, 30, 35),
+                Color::Rgb(20, 40, 25),
+                Color::Rgb(45, 20, 25),
+            )
+        };
+        let syntect_theme = if is_light {
+            "base16-ocean.light"
+        } else {
+            "base16-eighties.dark"
+        };
+
+        Self {
+            highlighter: OnceLock::new(),
+            main_bg: rgb(c.base),
+            bg_highlight: rgb(c.surface0),
+            fg_primary: rgb(c.text),
+            fg_secondary: rgb(c.subtext1),
+            fg_dim: rgb(c.subtext0),
+            diff_add: rgb(c.green),
+            diff_add_bg: add_bg,
+            diff_del: rgb(c.red),
+            diff_del_bg: del_bg,
+            diff_context: rgb(c.text),
+            diff_hunk_header: rgb(c.blue),
+            expanded_context_fg: rgb(c.overlay1),
+            syntax_add_bg,
+            syntax_del_bg,
+            syntect_theme,
+            file_added: rgb(c.green),
+            file_modified: rgb(c.yellow),
+            file_deleted: rgb(c.red),
+            file_renamed: rgb(c.pink),
+            reviewed: rgb(c.green),
+            pending: rgb(c.yellow),
+            comment_note: rgb(c.blue),
+            comment_suggestion: rgb(c.teal),
+            comment_issue: rgb(c.red),
+            comment_praise: rgb(c.green),
+            border_focused: rgb(c.lavender),
+            border_unfocused: rgb(c.overlay0),
+            status_bar_bg: rgb(c.mantle),
+            cursor_color: rgb(c.peach),
+            mode_fg: rgb(c.base),
+            mode_bg: rgb(c.lavender),
+        }
+    }
+
+    /// Create the Catppuccin Mocha theme (darkest)
+    pub fn catppuccin_mocha() -> Self {
+        Self::from_catppuccin(&PALETTE.mocha, false)
+    }
+
+    /// Create the Catppuccin Macchiato theme (dark)
+    pub fn catppuccin_macchiato() -> Self {
+        Self::from_catppuccin(&PALETTE.macchiato, false)
+    }
+
+    /// Create the Catppuccin Frappé theme (medium)
+    pub fn catppuccin_frappe() -> Self {
+        Self::from_catppuccin(&PALETTE.frappe, false)
+    }
+
+    /// Create the Catppuccin Latte theme (light)
+    pub fn catppuccin_latte() -> Self {
+        Self::from_catppuccin(&PALETTE.latte, true)
+    }
 }
 
 /// Theme selection from CLI argument
@@ -187,6 +278,10 @@ pub enum ThemeArg {
     #[default]
     Dark,
     Light,
+    CatppuccinMocha,
+    CatppuccinMacchiato,
+    CatppuccinFrappe,
+    CatppuccinLatte,
 }
 
 impl ThemeArg {
@@ -194,6 +289,10 @@ impl ThemeArg {
         match s.to_lowercase().as_str() {
             "dark" => Some(Self::Dark),
             "light" => Some(Self::Light),
+            "catppuccin-mocha" | "mocha" => Some(Self::CatppuccinMocha),
+            "catppuccin-macchiato" | "macchiato" => Some(Self::CatppuccinMacchiato),
+            "catppuccin-frappe" | "frappe" => Some(Self::CatppuccinFrappe),
+            "catppuccin-latte" | "latte" => Some(Self::CatppuccinLatte),
             _ => None,
         }
     }
@@ -204,6 +303,10 @@ pub fn resolve_theme(arg: ThemeArg) -> Theme {
     match arg {
         ThemeArg::Dark => Theme::dark(),
         ThemeArg::Light => Theme::light(),
+        ThemeArg::CatppuccinMocha => Theme::catppuccin_mocha(),
+        ThemeArg::CatppuccinMacchiato => Theme::catppuccin_macchiato(),
+        ThemeArg::CatppuccinFrappe => Theme::catppuccin_frappe(),
+        ThemeArg::CatppuccinLatte => Theme::catppuccin_latte(),
     }
 }
 
@@ -233,7 +336,8 @@ Usage: {name} [OPTIONS]
 
 Options:
   --theme <THEME>  Color theme to use [default: dark]
-                   Valid values: dark, light
+                   Valid values: dark, light, mocha, macchiato, frappe, latte
+                   (or catppuccin-mocha, catppuccin-macchiato, etc.)
   -h, --help       Print this help message
 
 Press ? in the application for keybinding help."
@@ -260,12 +364,12 @@ pub fn parse_theme_arg() -> ThemeArg {
             if let Some(value) = args.get(i + 1) {
                 return ThemeArg::from_str(value).unwrap_or_else(|| {
                     eprintln!(
-                        "Warning: Unknown theme '{value}', using dark. Valid options: dark, light"
+                        "Warning: Unknown theme '{value}', using dark. Valid options: dark, light, mocha, macchiato, frappe, latte"
                     );
                     ThemeArg::Dark
                 });
             } else {
-                eprintln!("Warning: --theme requires a value (dark, light)");
+                eprintln!("Warning: --theme requires a value (dark, light, mocha, macchiato, frappe, latte)");
                 return ThemeArg::Dark;
             }
         }
@@ -273,7 +377,7 @@ pub fn parse_theme_arg() -> ThemeArg {
         if let Some(value) = args[i].strip_prefix("--theme=") {
             return ThemeArg::from_str(value).unwrap_or_else(|| {
                 eprintln!(
-                    "Warning: Unknown theme '{value}', using dark. Valid options: dark, light"
+                    "Warning: Unknown theme '{value}', using dark. Valid options: dark, light, mocha, macchiato, frappe, latte"
                 );
                 ThemeArg::Dark
             });
