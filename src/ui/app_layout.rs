@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::Style,
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Wrap},
 };
 use unicode_width::UnicodeWidthStr;
 
@@ -75,6 +75,7 @@ fn render_commit_select(frame: &mut Frame, app: &App) {
     let block = Block::default()
         .title(" Recent Commits ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(&app.theme, true));
 
     let inner = block.inner(chunks[1]);
@@ -202,6 +203,7 @@ fn render_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Files ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);
@@ -352,6 +354,7 @@ fn render_unified_diff(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Diff (Unified) ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);
@@ -767,6 +770,7 @@ fn render_side_by_side_diff(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Diff (Side-by-Side) ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);

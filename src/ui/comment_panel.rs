@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Flex, Layout, Rect},
     style::{Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph, Wrap},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph, Wrap},
 };
 
 use crate::app::App;
@@ -52,6 +52,7 @@ pub fn render_comment_input(frame: &mut Frame, app: &App) {
             newline_hint
         ))
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(theme, true));
 
     let inner = block.inner(area);
@@ -184,6 +185,7 @@ pub fn render_confirm_dialog(frame: &mut Frame, app: &App, message: &str) {
     let block = Block::default()
         .title(" Confirm ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(theme, true));
 
     let inner = block.inner(area);

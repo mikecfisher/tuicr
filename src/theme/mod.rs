@@ -194,21 +194,31 @@ impl Theme {
             Color::Rgb(r, g, b)
         };
 
-        let (add_bg, del_bg, syntax_add_bg, syntax_del_bg) = if is_light {
-            (
-                Color::Rgb(220, 255, 220),
-                Color::Rgb(255, 230, 230),
-                Color::Rgb(230, 255, 235),
-                Color::Rgb(255, 240, 240),
-            )
-        } else {
-            (
-                Color::Rgb(30, 50, 35),
-                Color::Rgb(55, 30, 35),
-                Color::Rgb(20, 40, 25),
-                Color::Rgb(45, 20, 25),
-            )
+        // Official Catppuccin delta theme colors (20% tint)
+        // Source: https://github.com/catppuccin/delta/blob/main/catppuccin.gitconfig
+        let (add_bg, del_bg) = match flavor.name {
+            catppuccin::FlavorName::Latte => (
+                Color::Rgb(204, 225, 205), // #cce1cd
+                Color::Rgb(233, 196, 207), // #e9c4cf
+            ),
+            catppuccin::FlavorName::Frappe => (
+                Color::Rgb(71, 84, 83),  // #475453
+                Color::Rgb(84, 68, 82),  // #544452
+            ),
+            catppuccin::FlavorName::Macchiato => (
+                Color::Rgb(62, 75, 76),  // #3e4b4c
+                Color::Rgb(76, 58, 76),  // #4c3a4c
+            ),
+            catppuccin::FlavorName::Mocha => (
+                Color::Rgb(57, 69, 69),  // #394545
+                Color::Rgb(73, 52, 71),  // #493447
+            ),
         };
+
+        // Use same colors for syntax backgrounds
+        let syntax_add_bg = add_bg;
+        let syntax_del_bg = del_bg;
+
         let syntect_theme = if is_light {
             "base16-ocean.light"
         } else {

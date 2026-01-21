@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Flex, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph},
+    widgets::{Block, BorderType, Borders, Clear, Paragraph},
 };
 
 use crate::app::App;
@@ -19,6 +19,7 @@ pub fn render_help(frame: &mut Frame, app: &mut App) {
     let block = Block::default()
         .title(" Help (j/k to scroll) - Press ? or Esc to close ")
         .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
         .border_style(styles::border_style(theme, true));
 
     let inner = block.inner(area);
