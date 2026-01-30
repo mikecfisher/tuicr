@@ -82,37 +82,52 @@ pub fn render_header(frame: &mut Frame, app: &App, area: Rect) {
         },
     );
 
-    let update_span = if let Some(ref info) = app.update_info {
+    let (update_span, update_width) = if let Some(ref info) = app.update_info {
         if info.update_available {
-            Span::styled(
-                format!("[v{} available] ", info.latest_version),
-                Style::default()
-                    .fg(Color::Black)
-                    .bg(theme.comment_suggestion)
-                    .add_modifier(Modifier::BOLD),
+            let text = format!(" v{} available ", info.latest_version);
+            let width = text.len();
+            (
+                Span::styled(
+                    text,
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(theme.pending)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                width,
             )
         } else if info.is_ahead {
-            Span::styled(
-                format!("[unreleased v{}] ", info.current_version),
-                Style::default()
-                    .fg(Color::Black)
-                    .bg(theme.comment_suggestion)
-                    .add_modifier(Modifier::BOLD),
+            let text = format!(" unreleased v{} ", info.current_version);
+            let width = text.len();
+            (
+                Span::styled(
+                    text,
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(theme.pending)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                width,
             )
         } else {
-            Span::raw("")
+            (Span::raw(""), 0)
         }
     } else {
-        Span::raw("")
+        (Span::raw(""), 0)
     };
 
-    let line = Line::from(vec![
-        title_span,
-        vcs_span,
-        source_span,
-        progress_span,
-        update_span,
-    ]);
+    let left_spans = vec![title_span, vcs_span, source_span, progress_span];
+    let left_width: usize = left_spans.iter().map(|s| s.content.len()).sum();
+    let total_width = area.width as usize;
+    let padding_width = total_width.saturating_sub(left_width + update_width);
+
+    let mut spans = left_spans;
+    spans.push(Span::raw(" ".repeat(padding_width)));
+    if update_width > 0 {
+        spans.push(update_span);
+    }
+
+    let line = Line::from(spans);
 
     let header = Paragraph::new(line)
         .style(styles::status_bar_style(theme))

@@ -2498,7 +2498,6 @@ mod scroll_tests {
 
     /// Test the max_scroll_offset calculation logic directly using DiffState
     /// This tests the core algorithm without needing full App setup
-
     fn calc_max_scroll(total_lines: usize, viewport_height: usize, wrap_lines: bool) -> usize {
         let viewport = viewport_height.max(1);
         if wrap_lines {
