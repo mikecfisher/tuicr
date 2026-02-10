@@ -14,6 +14,11 @@ use crate::ui::{comment_panel, help_popup, status_bar, styles};
 use crate::vcs::git::calculate_gap;
 
 pub fn render(frame: &mut Frame, app: &mut App) {
+    frame.render_widget(
+        Block::default().style(styles::panel_style(&app.theme)),
+        frame.area(),
+    );
+
     // Special handling for commit selection mode
     if app.input_mode == InputMode::CommitSelect {
         render_commit_select(frame, app);
@@ -81,13 +86,14 @@ fn render_commit_select(frame: &mut Frame, app: &mut App) {
     // Header
     let header = Paragraph::new(" Select commits to review ")
         .style(styles::header_style(&app.theme))
-        .block(Block::default());
+        .block(Block::default().style(styles::panel_style(&app.theme)));
     frame.render_widget(header, chunks[0]);
 
     // Commit list
     let block = Block::default()
         .title(" Recent Commits ")
         .borders(Borders::ALL)
+        .style(styles::panel_style(&app.theme))
         .border_style(styles::border_style(&app.theme, true));
 
     let inner = block.inner(chunks[1]);
@@ -201,7 +207,7 @@ fn render_commit_select(frame: &mut Frame, app: &mut App) {
         .take(inner.height as usize)
         .collect();
 
-    let list = Paragraph::new(visible_items);
+    let list = Paragraph::new(visible_items).style(styles::panel_style(&app.theme));
     frame.render_widget(list, inner);
 
     // Footer with mode, hints, and right-aligned message
@@ -276,6 +282,7 @@ fn render_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Files ")
         .borders(Borders::ALL)
+        .style(styles::panel_style(&app.theme))
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);
@@ -408,7 +415,9 @@ fn render_file_list(frame: &mut Frame, app: &mut App, area: Rect) {
         })
         .collect();
 
-    let list = List::new(items).block(block);
+    let list = List::new(items)
+        .style(styles::panel_style(&app.theme))
+        .block(block);
 
     frame.render_stateful_widget(list, area, &mut app.file_list_state.list_state);
 }
@@ -426,6 +435,7 @@ fn render_unified_diff(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Diff (Unified) ")
         .borders(Borders::ALL)
+        .style(styles::panel_style(&app.theme))
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);
@@ -1040,7 +1050,7 @@ fn render_unified_diff(frame: &mut Frame, app: &mut App, area: Rect) {
             .collect()
     };
 
-    let mut diff = Paragraph::new(visible_lines);
+    let mut diff = Paragraph::new(visible_lines).style(styles::panel_style(&app.theme));
     if app.diff_state.wrap_lines {
         diff = diff.wrap(Wrap { trim: false });
     }
@@ -1133,6 +1143,7 @@ fn render_side_by_side_diff(frame: &mut Frame, app: &mut App, area: Rect) {
     let block = Block::default()
         .title(" Diff (Side-by-Side) ")
         .borders(Borders::ALL)
+        .style(styles::panel_style(&app.theme))
         .border_style(styles::border_style(&app.theme, focused));
 
     let inner = block.inner(area);
@@ -1478,7 +1489,7 @@ fn render_side_by_side_diff(frame: &mut Frame, app: &mut App, area: Rect) {
             .collect()
     };
 
-    let mut diff = Paragraph::new(visible_lines);
+    let mut diff = Paragraph::new(visible_lines).style(styles::panel_style(&app.theme));
     if app.diff_state.wrap_lines {
         diff = diff.wrap(Wrap { trim: false });
     }
